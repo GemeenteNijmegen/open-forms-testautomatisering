@@ -28,46 +28,6 @@
         }
       ]
     },
-    "bump": {
-      "name": "bump",
-      "description": "Bumps version based on latest git tag and generates a changelog entry",
-      "env": {
-        "OUTFILE": "package.json",
-        "CHANGELOG": "dist/changelog.md",
-        "BUMPFILE": "dist/version.txt",
-        "RELEASETAG": "dist/releasetag.txt",
-        "RELEASE_TAG_PREFIX": "",
-        "BUMP_PACKAGE": "commit-and-tag-version@^12"
-      },
-      "steps": [
-        {
-          "builtin": "release/resolve-latest-tag",
-          "outputEnv": "LATEST_TAG"
-        },
-        {
-          "spawn": "bump:releasable-commits",
-          "outputEnv": "RELEASABLE_COMMITS",
-          "condition": "git rev-parse --verify --quiet \"refs/tags/$LATEST_TAG\""
-        },
-        {
-          "builtin": "release/suggest-version-bump",
-          "outputEnv": "SUGGESTED_BUMP"
-        },
-        {
-          "builtin": "release/apply-version-bump"
-        }
-      ],
-      "condition": "git log --oneline -1 | grep -v \"chore(release):\" > /dev/null"
-    },
-    "bump:releasable-commits": {
-      "name": "bump:releasable-commits",
-      "description": "Print the releasable commits since the latest release",
-      "steps": [
-        {
-          "exec": "git log --oneline $LATEST_TAG..HEAD"
-        }
-      ]
-    },
     "clobber": {
       "name": "clobber",
       "description": "hard resets to HEAD of origin and cleans the local repo",
@@ -172,24 +132,7 @@
     },
     "package": {
       "name": "package",
-      "description": "Creates the distribution package",
-      "steps": [
-        {
-          "execArgs": [
-            "mkdir",
-            "-p",
-            "dist/js"
-          ]
-        },
-        {
-          "execArgs": [
-            "npm",
-            "pack",
-            "--pack-destination",
-            "dist/js"
-          ]
-        }
-      ]
+      "description": "Creates the distribution package"
     },
     "post-compile": {
       "name": "post-compile",
@@ -202,31 +145,6 @@
     "pre-compile": {
       "name": "pre-compile",
       "description": "Prepare the project for compilation"
-    },
-    "release": {
-      "name": "release",
-      "description": "Prepare a release from \"main\" branch",
-      "env": {
-        "RELEASE": "true",
-        "MAJOR": "0"
-      },
-      "steps": [
-        {
-          "exec": "rm -fr dist"
-        },
-        {
-          "spawn": "bump"
-        },
-        {
-          "spawn": "build"
-        },
-        {
-          "spawn": "unbump"
-        },
-        {
-          "exec": "git diff --ignore-space-at-eol --exit-code"
-        }
-      ]
     },
     "test": {
       "name": "test",
@@ -241,29 +159,28 @@
         }
       ]
     },
+    "test:playwright": {
+      "name": "test:playwright",
+      "steps": [
+        {
+          "exec": "playwright test"
+        }
+      ]
+    },
+    "test:playwright:headed": {
+      "name": "test:playwright:headed",
+      "steps": [
+        {
+          "exec": "playwright test --headed"
+        }
+      ]
+    },
     "test:watch": {
       "name": "test:watch",
       "description": "Run jest in watch mode",
       "steps": [
         {
           "exec": "jest --watch"
-        }
-      ]
-    },
-    "unbump": {
-      "name": "unbump",
-      "description": "Restores version to 0.0.0",
-      "env": {
-        "OUTFILE": "package.json",
-        "CHANGELOG": "dist/changelog.md",
-        "BUMPFILE": "dist/version.txt",
-        "RELEASETAG": "dist/releasetag.txt",
-        "RELEASE_TAG_PREFIX": "",
-        "BUMP_PACKAGE": "commit-and-tag-version@^12"
-      },
-      "steps": [
-        {
-          "builtin": "release/reset-version"
         }
       ]
     },
@@ -283,7 +200,7 @@
             "--peer",
             "--no-deprecated",
             "--dep=dev,prod,peer,optional",
-            "--filter=@gemeentenijmegen/projen-project-type,@types/jest,@types/node,eslint-import-resolver-typescript,eslint-plugin-import,jest,projen,ts-jest,ts-node,typescript"
+            "--filter=@gemeentenijmegen/projen-project-type,@playwright/test,@types/jest,@types/node,eslint-import-resolver-typescript,eslint-plugin-import,jest,projen,ts-jest,ts-node,typescript"
           ]
         },
         {
@@ -294,12 +211,12 @@
             "npm",
             "update",
             "@gemeentenijmegen/projen-project-type",
+            "@playwright/test",
             "@stylistic/eslint-plugin",
             "@types/jest",
             "@types/node",
             "@typescript-eslint/eslint-plugin",
             "@typescript-eslint/parser",
-            "commit-and-tag-version",
             "constructs",
             "eslint-import-resolver-typescript",
             "eslint-plugin-import",

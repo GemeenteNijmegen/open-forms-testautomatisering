@@ -30,6 +30,8 @@ jspm_packages/
 *.tgz
 .yarn-integrity
 .cache
+test-results/
+playwright-result-artifacts/
 test-reports/junit.xml
 test/__snapshots__/*
 .env
@@ -39,9 +41,6 @@ test/__snapshots__/*
 junit.xml
 /coverage/
 !/.github/workflows/build.yml
-/dist/changelog.md
-/dist/version.txt
-!/.github/workflows/release.yml
 !/.github/workflows/upgrade-acceptance.yml
 !/.github/pull_request_template.md
 !/test/

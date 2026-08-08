@@ -5,6 +5,10 @@
       "type": "build"
     },
     {
+      "name": "@playwright/test",
+      "type": "build"
+    },
+    {
       "name": "@stylistic/eslint-plugin",
       "version": "^2",
       "type": "build"
@@ -25,11 +29,6 @@
     {
       "name": "@typescript-eslint/parser",
       "version": "^8",
-      "type": "build"
-    },
-    {
-      "name": "commit-and-tag-version",
-      "version": "^12",
       "type": "build"
     },
     {
