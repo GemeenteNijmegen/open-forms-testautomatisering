@@ -86,12 +86,13 @@ test('explores the bbz-aanvragen happy flow', async ({ page }, testInfo) => {
 
   await page.getByRole('button', { name: /Voeg een rekeningnummer toe/ }).click();
   await page.getByRole('radio', { name: 'Nederlandse privérekening', exact: true }).check();
-  await page.getByLabel('Bankrekeningnummer (IBAN)').fill(testBankAccounts.gbTestIban.accountNumber);
+  await page.getByLabel('Bankrekeningnummer (IBAN)').fill(testBankAccounts.nlTestIban.accountNumber);
   await page.getByLabel('Hoeveel geld staat er nu op deze rekening?').fill('100');
   await page.getByRole('combobox').click();
   await page.getByRole('option', { name: 'Uzelf', exact: true }).click();
   await uploadFixture(page, page.getByRole('link', { name: /selecteer 'Upload een afschrift/ }), 'pdf13Kb');
   await page.getByRole('button', { name: 'Opslaan', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Opslaan', exact: true })).toBeHidden({ timeout: 30_000 });
   await page.getByRole('group', { name: 'Bezittingen *' }).getByRole('checkbox', { name: 'Geen bezittingen', exact: true }).check();
   await page.getByRole('group', { name: 'Welke bezittingen heeft uw onderneming(en)? *' }).getByRole('checkbox', { name: 'Geen bezittingen', exact: true }).check();
   await page.getByRole('radiogroup', { name: 'Heeft u schulden (bijvoorbeeld leningen of achterstanden)? *' }).getByRole('radio', { name: 'nee', exact: true }).check();
@@ -99,7 +100,7 @@ test('explores the bbz-aanvragen happy flow', async ({ page }, testInfo) => {
   await captureLoadedFormState('bbz-aanvragen-10-bezittingen-en-schulden');
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
   await expectFormStep(page, 'Uitbetaling');
-  await page.getByRole('radio', { name: testBankAccounts.gbTestIban.accountNumber, exact: true }).check();
+  await page.getByRole('radio', { name: testBankAccounts.nlTestIban.accountNumber, exact: true }).check();
   await captureLoadedFormState('bbz-aanvragen-11-uitbetaling');
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
   await expectFormStep(page, 'Opmerkingen');
