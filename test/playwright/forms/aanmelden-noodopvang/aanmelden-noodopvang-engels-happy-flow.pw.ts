@@ -14,6 +14,7 @@ test.setTimeout(600_000);
 test('submits the English aanmelden noodopvang happy flow', async ({ page }, testInfo) => {
   const capture = async (label: string): Promise<void> => {
     await page.waitForTimeout(3_000);
+    await declineCookies(page);
     console.log(`Form artifacts: ${await captureFormState(page, testInfo, label)}`);
   };
   const selectRadio = async (groupName: string, optionName: 'yes' | 'no'): Promise<void> => {
