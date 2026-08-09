@@ -92,8 +92,9 @@ test('explores the bbz-aanvragen happy flow', { tag: '@digid-999971785' }, async
   await page.getByRole('combobox').click();
   await page.getByRole('option', { name: 'Uzelf', exact: true }).click();
   await uploadFixture(page, page.getByRole('link', { name: /selecteer 'Upload een afschrift/ }), 'pdf13Kb');
+  await expect(page.getByText('document-13-kb.pdf', { exact: true })).toBeVisible({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Opslaan', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Opslaan', exact: true })).toBeHidden({ timeout: 30_000 });
+  await expect(page.getByRole('button', { name: 'Opslaan', exact: true })).toBeHidden({ timeout: 15_000 });
   await page.getByRole('group', { name: 'Bezittingen *' }).getByRole('checkbox', { name: 'Geen bezittingen', exact: true }).check();
   await page.getByRole('group', { name: 'Welke bezittingen heeft uw onderneming(en)? *' }).getByRole('checkbox', { name: 'Geen bezittingen', exact: true }).check();
   await page.getByRole('radiogroup', { name: 'Heeft u schulden (bijvoorbeeld leningen of achterstanden)? *' }).getByRole('radio', { name: 'nee', exact: true }).check();
