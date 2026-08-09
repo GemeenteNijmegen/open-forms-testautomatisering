@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import type { Page } from '@playwright/test';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { expectFormStep } from '../../helpers/form-navigation';
 import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
 import { testBankAccounts } from '../../test-data/test-bank-accounts';

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { uploadFixture } from '../../helpers/file-upload';
 import { expectFormStep } from '../../helpers/form-navigation';
 import { fillOpenFormsDate } from '../../helpers/open-forms-date';
