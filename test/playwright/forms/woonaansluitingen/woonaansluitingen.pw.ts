@@ -98,7 +98,7 @@ test('captures the woonaansluitingen start page', async ({ page }, testInfo) => 
 
   await page.getByRole('radio', { name: 'Nee', exact: true }).check();
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Controleer en bevestig', exact: true })).toBeVisible();
+  await expectFormStep(page, 'Controleer en bevestig');
   await expect(page.getByRole('button', { name: 'Verzenden', exact: true })).toBeVisible();
   console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'woonaansluitingen-07-controleer-en-bevestig')}`);
 });

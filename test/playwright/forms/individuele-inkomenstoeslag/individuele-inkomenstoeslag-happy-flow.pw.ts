@@ -12,7 +12,7 @@ const testPerson = digidSimulatorPersons.persoon999971797;
 
 test.setTimeout(600_000);
 
-test('submits the individuele inkomenstoeslag happy flow', async ({ page }, testInfo) => {
+test('submits the individuele inkomenstoeslag happy flow', { tag: '@digid-999971797' }, async ({ page }, testInfo) => {
   const captureLoadedFormState = async (label: string): Promise<void> => {
     await expect(page.getByText('Loading form...', { exact: true })).toBeHidden({ timeout: 30_000 });
     await page.waitForTimeout(3_000);

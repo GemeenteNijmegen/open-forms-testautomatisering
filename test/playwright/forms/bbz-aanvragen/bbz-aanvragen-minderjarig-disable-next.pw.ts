@@ -10,7 +10,7 @@ const testPerson = digidSimulatorPersons.persoon999971815;
 
 test.setTimeout(90_000);
 
-test('blocks a minor from continuing past uw gegevens', async ({ page }, testInfo) => {
+test('blocks a minor from continuing past uw gegevens', { tag: '@digid-999971815' }, async ({ page }, testInfo) => {
   await page.goto(url, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Bijstand voor zelfstandigen aanvragen', exact: true })).toBeVisible({ timeout: 30_000 });
   await declineCookies(page);

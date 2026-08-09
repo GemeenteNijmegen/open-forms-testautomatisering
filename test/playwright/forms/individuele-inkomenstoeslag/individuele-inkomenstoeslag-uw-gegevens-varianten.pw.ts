@@ -53,7 +53,7 @@ async function completeStandardFlow(page: Page, captureLoadedFormState: (label: 
   await captureLoadedFormState('individuele-inkomenstoeslag-variant-99-bevestiging');
 }
 
-test('continues individuele inkomenstoeslag with alternative uw gegevens choices', async ({ page }, testInfo) => {
+test('continues individuele inkomenstoeslag with alternative uw gegevens choices', { tag: '@digid-999971797' }, async ({ page }, testInfo) => {
   const captureLoadedFormState = async (label: string): Promise<void> => {
     await expect(page.getByText('Loading form...', { exact: true })).toBeHidden({ timeout: 30_000 });
     await page.waitForTimeout(3_000);
@@ -85,7 +85,7 @@ test('continues individuele inkomenstoeslag with alternative uw gegevens choices
   await completeStandardFlow(page, captureLoadedFormState);
 });
 
-test('submits individuele inkomenstoeslag for an AOW-age applicant', async ({ page }, testInfo) => {
+test('submits individuele inkomenstoeslag for an AOW-age applicant', { tag: '@digid-999971773' }, async ({ page }, testInfo) => {
   const captureLoadedFormState = async (label: string): Promise<void> => {
     await expect(page.getByText('Loading form...', { exact: true })).toBeHidden({ timeout: 30_000 });
     await page.waitForTimeout(3_000);
@@ -117,7 +117,7 @@ test('submits individuele inkomenstoeslag for an AOW-age applicant', async ({ pa
   await completeStandardFlow(page, captureLoadedFormState);
 });
 
-test('submits individuele inkomenstoeslag with a partner', async ({ page }, testInfo) => {
+test('submits individuele inkomenstoeslag with a partner', { tag: '@digid-999971797' }, async ({ page }, testInfo) => {
   const captureLoadedFormState = async (label: string): Promise<void> => {
     await expect(page.getByText('Loading form...', { exact: true })).toBeHidden({ timeout: 30_000 });
     await page.waitForTimeout(3_000);

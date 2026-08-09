@@ -13,7 +13,7 @@ const testPerson = digidSimulatorPersons.semVanTHul;
 
 test.setTimeout(240_000);
 
-test('submits the bijstandsuitkering happy flow', async ({ page }, testInfo) => {
+test('submits the bijstandsuitkering happy flow', { tag: '@digid-999971785' }, async ({ page }, testInfo) => {
   if (process.env.PW_VIDEO !== '1') {
     await page.route('**/*', (route) => {
       const type = route.request().resourceType();

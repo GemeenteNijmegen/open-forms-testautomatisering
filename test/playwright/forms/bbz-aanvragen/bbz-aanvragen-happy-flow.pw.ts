@@ -14,7 +14,7 @@ const testPerson = digidSimulatorPersons.semVanTHul;
 
 test.setTimeout(600_000);
 
-test('explores the bbz-aanvragen happy flow', async ({ page }, testInfo) => {
+test('explores the bbz-aanvragen happy flow', { tag: '@digid-999971785' }, async ({ page }, testInfo) => {
   const captureLoadedFormState = async (label: string): Promise<void> => {
     await expect(page.getByText('Loading form...', { exact: true })).toBeHidden({ timeout: 30_000 });
     await page.waitForTimeout(3_000);
@@ -62,6 +62,7 @@ test('explores the bbz-aanvragen happy flow', async ({ page }, testInfo) => {
   await expectFormStep(page, 'Uw aanvraag');
 
   await fillOpenFormsDate(page, 'Vanaf wanneer wilt u een uitkering ontvangen?', '08-08-2026');
+  await page.getByRole('textbox', { name: /Waarom wilt u vanaf .* een uitkering ontvangen/ }).fill('Automatische testaanvraag.');
   await page.getByRole('radio', { name: 'Alleen levensonderhoud', exact: true }).check();
   await page.getByRole('radio', { name: 'Ik ben een startende ondernemer', exact: true }).check();
   await captureLoadedFormState('bbz-aanvragen-06-uw-aanvraag');
