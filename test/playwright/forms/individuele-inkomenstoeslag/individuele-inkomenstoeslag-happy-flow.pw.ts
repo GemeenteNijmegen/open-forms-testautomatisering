@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
 import { expectFormStep } from '../../helpers/form-navigation';
@@ -6,6 +7,8 @@ import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
 import { testBankAccounts } from '../../test-data/test-bank-accounts';
 import { captureFormState } from '../../utils/form-artifacts';
 import { openFormsUrl } from '../../utils/open-forms-url';
+
+registerErrorArtifactCapture();
 
 const url = openFormsUrl('/individuele-inkomenstoeslag-aanvragen/');
 const testPerson = digidSimulatorPersons.persoon999971797;
@@ -72,8 +75,9 @@ test('submits the individuele inkomenstoeslag happy flow', { tag: '@digid-999971
   await captureLoadedFormState('individuele-inkomenstoeslag-09-opmerkingen');
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Controleer en bevestig', exact: true })).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByText('Laden...', { exact: true })).toBeHidden({ timeout: 10_000 });
-  await page.getByRole('checkbox', { name: /kennis genomen van het privacybeleid/ }).check();
+  const privacyConsent = page.getByRole('checkbox', { name: /kennis genomen van het privacybeleid/ });
+  await expect(privacyConsent).toBeEnabled({ timeout: 30_000 });
+  await privacyConsent.check();
   // Open Forms does not expose the declaration label as the checkbox's accessible name.
   // Its stable form-submission name is the smallest available integration contract.
   await page.locator('input[name="statementOfTruthAccepted"]').check();

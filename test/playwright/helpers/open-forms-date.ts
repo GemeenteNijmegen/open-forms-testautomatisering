@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 /**
@@ -12,6 +13,7 @@ import type { Page } from '@playwright/test';
 export async function fillOpenFormsDate(page: Page, label: string, value: string): Promise<void> {
   const field = page.getByText(label, { exact: true }).locator('..').locator('..');
   const visibleInput = field.getByRole('textbox', { name: 'dd-mm-jjjj', exact: true });
+  await expect(visibleInput).toBeVisible({ timeout: 30_000 });
   await visibleInput.fill(value);
   await visibleInput.press('Tab');
 }

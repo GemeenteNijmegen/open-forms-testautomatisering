@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
 import { expectFormStep } from '../../helpers/form-navigation';
@@ -6,6 +7,8 @@ import { fillOpenFormsDate } from '../../helpers/open-forms-date';
 import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
 import { captureFormState } from '../../utils/form-artifacts';
 import { openFormsUrl } from '../../utils/open-forms-url';
+
+registerErrorArtifactCapture();
 
 const url = openFormsUrl('/bezwaar-maken/');
 const testPerson = digidSimulatorPersons.evaVanDeKamp;

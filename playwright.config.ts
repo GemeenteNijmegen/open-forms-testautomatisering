@@ -44,5 +44,7 @@ export default defineConfig({
   use: {
     browserName: 'chromium',
     video: process.env.PW_VIDEO === '1' ? 'on' : 'off',
+    screenshot: 'only-on-failure',
+    trace: 'retain-on-failure',
   },
 });

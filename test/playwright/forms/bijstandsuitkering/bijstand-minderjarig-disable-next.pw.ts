@@ -1,10 +1,13 @@
 import { expect, test } from '@playwright/test';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
 import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
 import { captureFormState } from '../../utils/form-artifacts';
 import { openFormsUrl } from '../../utils/open-forms-url';
 
+
+registerErrorArtifactCapture();
 const url = openFormsUrl('/bijstandsuitkering-aanvragen');
 const testPerson = digidSimulatorPersons.persoon999971815;
 

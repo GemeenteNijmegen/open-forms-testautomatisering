@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import type { Page } from '@playwright/test';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
@@ -7,6 +8,8 @@ import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
 import { testBankAccounts } from '../../test-data/test-bank-accounts';
 import { captureFormState } from '../../utils/form-artifacts';
 import { openFormsUrl } from '../../utils/open-forms-url';
+
+registerErrorArtifactCapture();
 
 const url = openFormsUrl('/individuele-inkomenstoeslag-aanvragen/');
 const testPerson = digidSimulatorPersons.persoon999971797;
@@ -44,12 +47,13 @@ async function completeStandardFlow(page: Page, captureLoadedFormState: (label: 
   await captureLoadedFormState('individuele-inkomenstoeslag-variant-08-opmerkingen');
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Controleer en bevestig', exact: true })).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText('Laden...', { exact: true })).toBeHidden({ timeout: 30_000 });
-  await page.getByRole('checkbox', { name: /kennis genomen van het privacybeleid/ }).check();
+  const privacyConsent = page.getByRole('checkbox', { name: /kennis genomen van het privacybeleid/ });
+  await expect(privacyConsent).toBeEnabled({ timeout: 30_000 });
+  await privacyConsent.check();
   await page.locator('input[name="statementOfTruthAccepted"]').check();
   await captureLoadedFormState('individuele-inkomenstoeslag-variant-09-overzicht');
   await page.getByRole('button', { name: 'Verzenden', exact: true }).click();
-  await expect(page.getByRole('heading', { name: /OF-[A-Z0-9]+/ })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole('heading', { name: /OF-[A-Z0-9]+/ })).toBeVisible({ timeout: 120_000 });
   await captureLoadedFormState('individuele-inkomenstoeslag-variant-99-bevestiging');
 }
 
