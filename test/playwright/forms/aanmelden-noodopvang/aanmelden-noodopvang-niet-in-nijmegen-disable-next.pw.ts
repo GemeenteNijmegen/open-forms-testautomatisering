@@ -14,12 +14,12 @@ test.setTimeout(90_000);
 
 test('blocks continuing when people do not currently live in Nijmegen', async ({ page }, testInfo) => {
   await page.goto(url, { waitUntil: 'domcontentloaded' });
-  await declineCookies(page);
   await page.getByText('NL', { exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Aanmelden voor noodopvang', exact: true })).toBeVisible({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Formulier starten', exact: true }).click();
 
   await expectFormStep(page, 'Uw gegevens');
+  await declineCookies(page);
   await page.getByLabel('Naam', { exact: true }).fill('Playwright test');
   await page.getByLabel('E-mailadres', { exact: true }).fill('playwright-noodopvang@example.com');
   await page.getByLabel('Telefoonnummer', { exact: true }).fill('0612345678');

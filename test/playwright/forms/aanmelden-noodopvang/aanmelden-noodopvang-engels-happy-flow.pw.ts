@@ -28,13 +28,13 @@ test('submits the English aanmelden noodopvang happy flow', async ({ page }, tes
 
   const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
   expect(response?.ok()).toBe(true);
-  await declineCookies(page);
   await page.getByText('EN', { exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Registering for Emergency Shelter', exact: true })).toBeVisible({ timeout: 30_000 });
   await capture('aanmelden-noodopvang-en-01-startpagina');
   await page.getByRole('button', { name: 'Begin form', exact: true }).click();
 
   await expectFormStep(page, 'Your Data');
+  await declineCookies(page);
   await page.getByLabel('Name', { exact: true }).fill('Playwright test');
   await page.getByLabel('Email Address', { exact: true }).fill('playwright-noodopvang@example.com');
   await page.getByLabel('Telephone Number', { exact: true }).fill('0612345678');
