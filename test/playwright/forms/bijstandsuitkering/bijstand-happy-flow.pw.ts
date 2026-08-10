@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { uploadFixture } from '../../helpers/file-upload';
 import { expectFormStep } from '../../helpers/form-navigation';
 import { fillOpenFormsDate } from '../../helpers/open-forms-date';
@@ -8,12 +9,14 @@ import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
 import { captureFormState } from '../../utils/form-artifacts';
 import { openFormsUrl } from '../../utils/open-forms-url';
 
+registerErrorArtifactCapture();
+
 const url = openFormsUrl('/bijstandsuitkering-aanvragen');
 const testPerson = digidSimulatorPersons.semVanTHul;
 
 test.setTimeout(240_000);
 
-test('submits the bijstandsuitkering happy flow', async ({ page }, testInfo) => {
+test('submits the bijstandsuitkering happy flow', { tag: '@digid-999971785' }, async ({ page }, testInfo) => {
   if (process.env.PW_VIDEO !== '1') {
     await page.route('**/*', (route) => {
       const type = route.request().resourceType();
@@ -76,7 +79,7 @@ test('submits the bijstandsuitkering happy flow', async ({ page }, testInfo) => 
   await fillOpenFormsDate(page, 'Datum van inschrijving UWV (werk.nl)', '01-01-2026');
   await fillOpenFormsDate(page, 'Vanaf wanneer wilt u een uitkering ontvangen?', '01-01-2026');
   const toelichtingAanvraagdatum = page.getByLabel(/Waarom wilt u vanaf 1 januari 2026 een uitkering ontvangen\?/);
-  await expect(toelichtingAanvraagdatum).toBeVisible();
+  await expect(toelichtingAanvraagdatum).toBeVisible({ timeout: 30_000 });
   await toelichtingAanvraagdatum.fill('Ik vraag vanaf deze datum een uitkering aan wegens het einde van mijn studie.');
   await toelichtingAanvraagdatum.press('Tab');
   await page.getByRole('radio', { name: 'Einde studie of studiefinanciering', exact: true }).check();
@@ -115,8 +118,7 @@ test('submits the bijstandsuitkering happy flow', async ({ page }, testInfo) => 
   console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijstandsuitkering-21-bewijsstukken')}`);
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
   await expectFormStep(page, 'Controleer en bevestig');
-  await expect(page.getByText('Laden...', { exact: true })).toBeHidden();
-  await expect(page.getByRole('button', { name: 'Verzenden', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Verzenden', exact: true })).toBeEnabled({ timeout: 30_000 });
   console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijstandsuitkering-22-controleer-en-bevestig')}`);
   await page.getByRole('button', { name: 'Verzenden', exact: true }).click();
   await expect(page.getByText(/^OF-[A-Z0-9]+$/, { exact: true })).toBeVisible({ timeout: 120_000 });

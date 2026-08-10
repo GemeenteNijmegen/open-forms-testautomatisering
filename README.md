@@ -56,6 +56,7 @@ Zie `.env.example` voor de mogelijke waarden van `PW_VIDEO` en `OPEN_FORMS_BASE_
 ## Documentatie
 
 - [Helpers en herbruikbare flows](docs/helpers-and-flows.md)
+- [Parallelle testresources voor DigiD en eHerkenning](docs/parallel-testresources.md)
 
 ## Formulierartifacts
 

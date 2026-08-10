@@ -1,17 +1,20 @@
 import { expect, test } from '@playwright/test';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { expectFormStep } from '../../helpers/form-navigation';
 import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
 import { captureFormState } from '../../utils/form-artifacts';
 import { openFormsUrl } from '../../utils/open-forms-url';
+
+registerErrorArtifactCapture();
 
 const url = openFormsUrl('/individuele-inkomenstoeslag-aanvragen/');
 const testPerson = digidSimulatorPersons.persoon999971797;
 
 test.setTimeout(180_000);
 
-test('stops individuele inkomenstoeslag when previously received', async ({ page }, testInfo) => {
+test('stops individuele inkomenstoeslag when previously received', { tag: '@digid-999971797' }, async ({ page }, testInfo) => {
   test.fail(true, 'ACCP continues to Uw inkomen after the applicant answers that they received IIT in the past 12 months.');
 
   const captureLoadedFormState = async (label: string): Promise<void> => {

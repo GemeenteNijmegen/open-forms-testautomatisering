@@ -15,17 +15,24 @@ export const uploadFixtures = {
 
 export type UploadFixtureName = keyof typeof uploadFixtures;
 
-/** Waits until Open Forms has finished uploading the selected file. */
+/** Waits for Open Forms to accept an uploaded submission file. */
 export async function waitForOpenFormsUpload(page: Page): Promise<void> {
-  const uploadStatus = page.getByText('Starting upload.', { exact: true });
+  const response = await page.waitForResponse(
+    (candidate) => {
+      const request = candidate.request();
 
-  await expect(uploadStatus).toBeVisible({ timeout: 30_000 });
-  await expect(uploadStatus).toBeHidden({ timeout: 30_000 });
+      return request.method() === 'POST' && candidate.url().includes('/api/v2/formio/fileupload');
+    },
+    { timeout: 30_000 },
+  );
+
+  expect(response.ok(), `Upload request failed with HTTP ${response.status()}: ${response.url()}`).toBe(true);
 }
 
 /**
- * Selects a reusable fixture, waits for the Open Forms upload to finish and
- * writes the selected file type and actual size to the Playwright output.
+ * Selects a reusable fixture, waits for the server to accept it, verifies the
+ * user-visible file item and writes the selected file type and actual size to
+ * the Playwright output.
  */
 export async function uploadFixture(page: Page, filePicker: Locator, fixtureName: UploadFixtureName): Promise<void> {
   const fixture = uploadFixtures[fixtureName];
@@ -34,10 +41,13 @@ export async function uploadFixture(page: Page, filePicker: Locator, fixtureName
 
   expect(size).toBe(fixture.sizeBytes);
   console.log(`Upload: selecting ${fixture.fileName} (${fixture.mediaType}, ${size} bytes).`);
+  // This listener starts before setFiles, so responses from earlier uploads cannot satisfy it.
+  const uploadResponse = waitForOpenFormsUpload(page);
   const fileChooserPromise = page.waitForEvent('filechooser');
   await filePicker.click();
   await (await fileChooserPromise).setFiles(fixturePath);
-  console.log(`Upload: waiting for ${fixture.fileName} to finish.`);
-  await waitForOpenFormsUpload(page);
+  console.log(`Upload: waiting for ${fixture.fileName} to be accepted by Open Forms.`);
+  await uploadResponse;
+  await expect(page.getByText(fixture.fileName, { exact: true })).toBeVisible({ timeout: 30_000 });
   console.log(`Upload: completed ${fixture.fileName}.`);
 }

@@ -2,11 +2,14 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { expectFormStep } from '../../helpers/form-navigation';
 import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
 import { testBankAccounts } from '../../test-data/test-bank-accounts';
 import { captureFormState } from '../../utils/form-artifacts';
 import { openFormsUrl } from '../../utils/open-forms-url';
+
+registerErrorArtifactCapture();
 
 const url = openFormsUrl('/individuele-inkomenstoeslag-aanvragen/');
 const testPerson = digidSimulatorPersons.persoon999971797;
@@ -44,16 +47,17 @@ async function completeStandardFlow(page: Page, captureLoadedFormState: (label: 
   await captureLoadedFormState('individuele-inkomenstoeslag-variant-08-opmerkingen');
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Controleer en bevestig', exact: true })).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText('Laden...', { exact: true })).toBeHidden({ timeout: 30_000 });
-  await page.getByRole('checkbox', { name: /kennis genomen van het privacybeleid/ }).check();
+  const privacyConsent = page.getByRole('checkbox', { name: /kennis genomen van het privacybeleid/ });
+  await expect(privacyConsent).toBeEnabled({ timeout: 30_000 });
+  await privacyConsent.check();
   await page.locator('input[name="statementOfTruthAccepted"]').check();
   await captureLoadedFormState('individuele-inkomenstoeslag-variant-09-overzicht');
   await page.getByRole('button', { name: 'Verzenden', exact: true }).click();
-  await expect(page.getByRole('heading', { name: /OF-[A-Z0-9]+/ })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole('heading', { name: /OF-[A-Z0-9]+/ })).toBeVisible({ timeout: 120_000 });
   await captureLoadedFormState('individuele-inkomenstoeslag-variant-99-bevestiging');
 }
 
-test('continues individuele inkomenstoeslag with alternative uw gegevens choices', async ({ page }, testInfo) => {
+test('continues individuele inkomenstoeslag with alternative uw gegevens choices', { tag: '@digid-999971797' }, async ({ page }, testInfo) => {
   const captureLoadedFormState = async (label: string): Promise<void> => {
     await expect(page.getByText('Loading form...', { exact: true })).toBeHidden({ timeout: 30_000 });
     await page.waitForTimeout(3_000);
@@ -85,7 +89,7 @@ test('continues individuele inkomenstoeslag with alternative uw gegevens choices
   await completeStandardFlow(page, captureLoadedFormState);
 });
 
-test('submits individuele inkomenstoeslag for an AOW-age applicant', async ({ page }, testInfo) => {
+test('submits individuele inkomenstoeslag for an AOW-age applicant', { tag: '@digid-999971773' }, async ({ page }, testInfo) => {
   const captureLoadedFormState = async (label: string): Promise<void> => {
     await expect(page.getByText('Loading form...', { exact: true })).toBeHidden({ timeout: 30_000 });
     await page.waitForTimeout(3_000);
@@ -117,7 +121,7 @@ test('submits individuele inkomenstoeslag for an AOW-age applicant', async ({ pa
   await completeStandardFlow(page, captureLoadedFormState);
 });
 
-test('submits individuele inkomenstoeslag with a partner', async ({ page }, testInfo) => {
+test('submits individuele inkomenstoeslag with a partner', { tag: '@digid-999971797' }, async ({ page }, testInfo) => {
   const captureLoadedFormState = async (label: string): Promise<void> => {
     await expect(page.getByText('Loading form...', { exact: true })).toBeHidden({ timeout: 30_000 });
     await page.waitForTimeout(3_000);

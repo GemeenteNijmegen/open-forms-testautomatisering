@@ -1,16 +1,19 @@
 import { expect, test } from '@playwright/test';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
 import { captureFormState } from '../../utils/form-artifacts';
 import { openFormsUrl } from '../../utils/open-forms-url';
+
+registerErrorArtifactCapture();
 
 const url = openFormsUrl('/bbz-aanvragen/');
 const testPerson = digidSimulatorPersons.persoon999971815;
 
 test.setTimeout(90_000);
 
-test('blocks a minor from continuing past uw gegevens', async ({ page }, testInfo) => {
+test('blocks a minor from continuing past uw gegevens', { tag: '@digid-999971815' }, async ({ page }, testInfo) => {
   await page.goto(url, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Bijstand voor zelfstandigen aanvragen', exact: true })).toBeVisible({ timeout: 30_000 });
   await declineCookies(page);

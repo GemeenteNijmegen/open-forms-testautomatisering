@@ -1,10 +1,14 @@
 import { expect, test } from '@playwright/test';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
+import { expectFormStep } from '../../helpers/form-navigation';
 import { captureFormState } from '../../utils/form-artifacts';
 import { openFormsUrl } from '../../utils/open-forms-url';
 
+registerErrorArtifactCapture();
+
 const url = openFormsUrl('/test-woonaansluitingen-etc');
 
-test.setTimeout(45_000);
+test.setTimeout(90_000);
 
 test('captures the KOVA ja route', async ({ page }, testInfo) => {
   const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
@@ -46,7 +50,7 @@ test('captures the KOVA ja route', async ({ page }, testInfo) => {
   const nextButton = page.getByRole('button', { name: 'Volgende', exact: true });
   await expect(nextButton).toBeEnabled({ timeout: 10_000 });
   await nextButton.click();
-  await expect(page.getByRole('heading', { name: 'Woningen, energie en aansluitingen', exact: true })).toBeVisible();
+  await expectFormStep(page, 'Woningen, energie en aansluitingen');
   await expect(page.getByRole('status', { name: 'Laden...' })).toBeHidden({ timeout: 15_000 });
   console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'woonaansluitingen-kova-ja-06-woningen-energie-aansluitingen')}`);
 });
@@ -91,13 +95,13 @@ test('captures the woonaansluitingen start page', async ({ page }, testInfo) => 
   await page.locator('textarea[name="aansluitgegevensToelichting"]').fill('Testgegevens voor geautomatiseerde controle.');
   await page.getByRole('button', { name: 'Woninggroep opslaan', exact: true }).click();
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Collectieve voorzieningen', exact: true })).toBeVisible();
+  await expectFormStep(page, 'Collectieve voorzieningen');
   await expect(page.getByRole('status', { name: 'Laden...' })).toBeHidden({ timeout: 15_000 });
   console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'woonaansluitingen-06-collectieve-voorzieningen')}`);
 
   await page.getByRole('radio', { name: 'Nee', exact: true }).check();
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Controleer en bevestig', exact: true })).toBeVisible();
+  await expectFormStep(page, 'Controleer en bevestig');
   await expect(page.getByRole('button', { name: 'Verzenden', exact: true })).toBeVisible();
   console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'woonaansluitingen-07-controleer-en-bevestig')}`);
 });

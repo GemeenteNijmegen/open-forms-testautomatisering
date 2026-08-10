@@ -1,18 +1,21 @@
 import { expect, test } from '@playwright/test';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { expectFormStep } from '../../helpers/form-navigation';
 import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
 import { testBankAccounts } from '../../test-data/test-bank-accounts';
 import { captureFormState } from '../../utils/form-artifacts';
 import { openFormsUrl } from '../../utils/open-forms-url';
 
+registerErrorArtifactCapture();
+
 const url = openFormsUrl('/individuele-inkomenstoeslag-aanvragen/');
 const testPerson = digidSimulatorPersons.persoon999971797;
 
 test.setTimeout(600_000);
 
-test('submits the individuele inkomenstoeslag happy flow', async ({ page }, testInfo) => {
+test('submits the individuele inkomenstoeslag happy flow', { tag: '@digid-999971797' }, async ({ page }, testInfo) => {
   const captureLoadedFormState = async (label: string): Promise<void> => {
     await expect(page.getByText('Loading form...', { exact: true })).toBeHidden({ timeout: 30_000 });
     await page.waitForTimeout(3_000);
@@ -72,8 +75,9 @@ test('submits the individuele inkomenstoeslag happy flow', async ({ page }, test
   await captureLoadedFormState('individuele-inkomenstoeslag-09-opmerkingen');
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Controleer en bevestig', exact: true })).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByText('Laden...', { exact: true })).toBeHidden({ timeout: 10_000 });
-  await page.getByRole('checkbox', { name: /kennis genomen van het privacybeleid/ }).check();
+  const privacyConsent = page.getByRole('checkbox', { name: /kennis genomen van het privacybeleid/ });
+  await expect(privacyConsent).toBeEnabled({ timeout: 30_000 });
+  await privacyConsent.check();
   // Open Forms does not expose the declaration label as the checkbox's accessible name.
   // Its stable form-submission name is the smallest available integration contract.
   await page.locator('input[name="statementOfTruthAccepted"]').check();

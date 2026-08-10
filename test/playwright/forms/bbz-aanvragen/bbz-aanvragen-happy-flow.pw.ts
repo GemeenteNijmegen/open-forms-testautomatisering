@@ -1,20 +1,24 @@
 import { expect, test } from '@playwright/test';
 import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
 import { declineCookies } from '../../helpers/cookies';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
 import { uploadFixture } from '../../helpers/file-upload';
 import { expectFormStep } from '../../helpers/form-navigation';
 import { fillOpenFormsDate } from '../../helpers/open-forms-date';
+import { saveRepeatingGroupRow } from '../../helpers/repeating-group';
 import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
 import { testBankAccounts } from '../../test-data/test-bank-accounts';
 import { captureFormState } from '../../utils/form-artifacts';
 import { openFormsUrl } from '../../utils/open-forms-url';
+
+registerErrorArtifactCapture();
 
 const url = openFormsUrl('/bbz-aanvragen/');
 const testPerson = digidSimulatorPersons.semVanTHul;
 
 test.setTimeout(600_000);
 
-test('explores the bbz-aanvragen happy flow', async ({ page }, testInfo) => {
+test('explores the bbz-aanvragen happy flow', { tag: '@digid-999971785' }, async ({ page }, testInfo) => {
   const captureLoadedFormState = async (label: string): Promise<void> => {
     await expect(page.getByText('Loading form...', { exact: true })).toBeHidden({ timeout: 30_000 });
     await page.waitForTimeout(3_000);
@@ -62,6 +66,7 @@ test('explores the bbz-aanvragen happy flow', async ({ page }, testInfo) => {
   await expectFormStep(page, 'Uw aanvraag');
 
   await fillOpenFormsDate(page, 'Vanaf wanneer wilt u een uitkering ontvangen?', '08-08-2026');
+  await page.getByRole('textbox', { name: /Waarom wilt u vanaf .* een uitkering ontvangen/ }).fill('Automatische testaanvraag.');
   await page.getByRole('radio', { name: 'Alleen levensonderhoud', exact: true }).check();
   await page.getByRole('radio', { name: 'Ik ben een startende ondernemer', exact: true }).check();
   await captureLoadedFormState('bbz-aanvragen-06-uw-aanvraag');
@@ -86,12 +91,17 @@ test('explores the bbz-aanvragen happy flow', async ({ page }, testInfo) => {
 
   await page.getByRole('button', { name: /Voeg een rekeningnummer toe/ }).click();
   await page.getByRole('radio', { name: 'Nederlandse privérekening', exact: true }).check();
-  await page.getByLabel('Bankrekeningnummer (IBAN)').fill(testBankAccounts.gbTestIban.accountNumber);
+  await page.getByLabel('Bankrekeningnummer (IBAN)').fill(testBankAccounts.nlTestIban.accountNumber);
   await page.getByLabel('Hoeveel geld staat er nu op deze rekening?').fill('100');
   await page.getByRole('combobox').click();
   await page.getByRole('option', { name: 'Uzelf', exact: true }).click();
   await uploadFixture(page, page.getByRole('link', { name: /selecteer 'Upload een afschrift/ }), 'pdf13Kb');
-  await page.getByRole('button', { name: 'Opslaan', exact: true }).click();
+  await expect(page.getByText('document-13-kb.pdf', { exact: true })).toBeVisible({ timeout: 30_000 });
+  await saveRepeatingGroupRow(page, {
+    description: 'de Nederlandse privérekening',
+    saveButton: page.getByRole('button', { name: 'Opslaan', exact: true }),
+    successIndicator: page.getByText(testBankAccounts.nlTestIban.accountNumber, { exact: true }),
+  });
   await page.getByRole('group', { name: 'Bezittingen *' }).getByRole('checkbox', { name: 'Geen bezittingen', exact: true }).check();
   await page.getByRole('group', { name: 'Welke bezittingen heeft uw onderneming(en)? *' }).getByRole('checkbox', { name: 'Geen bezittingen', exact: true }).check();
   await page.getByRole('radiogroup', { name: 'Heeft u schulden (bijvoorbeeld leningen of achterstanden)? *' }).getByRole('radio', { name: 'nee', exact: true }).check();
@@ -99,7 +109,7 @@ test('explores the bbz-aanvragen happy flow', async ({ page }, testInfo) => {
   await captureLoadedFormState('bbz-aanvragen-10-bezittingen-en-schulden');
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
   await expectFormStep(page, 'Uitbetaling');
-  await page.getByRole('radio', { name: testBankAccounts.gbTestIban.accountNumber, exact: true }).check();
+  await page.getByRole('radio', { name: testBankAccounts.nlTestIban.accountNumber, exact: true }).check();
   await captureLoadedFormState('bbz-aanvragen-11-uitbetaling');
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
   await expectFormStep(page, 'Opmerkingen');
@@ -107,8 +117,7 @@ test('explores the bbz-aanvragen happy flow', async ({ page }, testInfo) => {
   await captureLoadedFormState('bbz-aanvragen-12-opmerkingen');
   await page.getByRole('button', { name: 'Volgende', exact: true }).click();
   await expectFormStep(page, 'Controleer en bevestig');
-  await expect(page.getByText('Laden...', { exact: true })).toBeHidden({ timeout: 30_000 });
-  await expect(page.getByRole('button', { name: 'Verzenden', exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('button', { name: 'Verzenden', exact: true })).toBeEnabled({ timeout: 30_000 });
   await captureLoadedFormState('bbz-aanvragen-13-controleer-en-bevestig');
   await page.getByRole('button', { name: 'Verzenden', exact: true }).click();
 
