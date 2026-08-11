@@ -1,0 +1,103 @@
+import { expect, test } from '@playwright/test';
+import { loginWithDigiDSimulator } from '../../authentication/digid-simulator';
+import { declineCookies } from '../../helpers/cookies';
+import { registerErrorArtifactCapture } from '../../helpers/error-artifacts';
+import { uploadFixture } from '../../helpers/file-upload';
+import { expectFormStep } from '../../helpers/form-navigation';
+import { digidSimulatorPersons } from '../../test-data/digid-simulator-persons';
+import { testBankAccounts } from '../../test-data/test-bank-accounts';
+import { captureFormState } from '../../utils/form-artifacts';
+import { openFormsUrl } from '../../utils/open-forms-url';
+
+registerErrorArtifactCapture();
+
+const url = openFormsUrl('/bijzonderebijstandaanvragen/');
+const testPerson = digidSimulatorPersons.persoon999971797;
+
+test.setTimeout(600_000);
+
+test('submits the bijzondere bijstand happy flow', { tag: '@digid-999971797' }, async ({ page }, testInfo) => {
+  const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
+
+  expect(response).not.toBeNull();
+  expect(response?.ok()).toBe(true);
+  await page.waitForFunction(() => document.readyState === 'complete');
+  await declineCookies(page);
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-01-startpagina')}`);
+
+  await loginWithDigiDSimulator(page, testPerson.bsn);
+  await expectFormStep(page, 'Uw gegevens');
+  await declineCookies(page);
+
+  await page.getByRole('radiogroup', { name: 'Voor wie vraagt u bijzondere bijstand aan?' }).getByRole('radio', { name: 'mijzelf', exact: true }).check();
+  const phoneNumber = page.getByLabel(/Uw telefoonnummer/);
+  await phoneNumber.fill('0612345678');
+  await phoneNumber.press('Tab');
+  const emailAddress = page.getByLabel(/Uw e-mailadres/);
+  await emailAddress.fill('test@example.com');
+  await emailAddress.press('Tab');
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-02-uw-gegevens')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Belangrijk');
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-03-belangrijk')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Bank en bewindvoering');
+  await page.getByLabel(/IBAN beheerrekening/).fill(testBankAccounts.gbTestIban.accountNumber);
+  await page.getByRole('radiogroup', { name: 'Woont u samen of bent u getrouwd?' }).getByRole('radio', { name: 'nee', exact: true }).check();
+  await page.getByRole('radiogroup', { name: 'Bent u een alleenstaande ouder en heeft u een kind dat jonger is dan 18 jaar én bij u in huis woont?' }).getByRole('radio', { name: 'nee', exact: true }).check();
+  await page.getByRole('radiogroup', { name: 'Heeft u een bijstandsuitkering van de gemeente Nijmegen' }).getByRole('radio', { name: 'nee', exact: true }).check();
+  await page.getByRole('radiogroup', { name: 'Heeft u een bewindvoerder of budgetbeheerder?' }).getByRole('radio', { name: 'nee', exact: true }).check();
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-04-bank-en-bewindvoering')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Wonen');
+  await page.getByRole('radiogroup', { name: 'U woont' }).getByRole('radio', { name: 'in een huurwoning', exact: true }).check();
+  await page.getByRole('radiogroup', { name: /Betaalt u of een van uw gezinsleden een eigen bijdrage/ }).getByRole('radio', { name: 'nee', exact: true }).check();
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-05-wonen')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Bijzondere bijstand');
+  await page.getByRole('checkbox', { name: 'andere kosten', exact: true }).check();
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-06-bijzondere-bijstand')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Andere kosten');
+  await page.getByRole('checkbox', { name: 'griffierecht', exact: true }).check();
+  await page.getByLabel('Bedrag dat u moet betalen').fill('100');
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-07-andere-kosten')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Inkomen');
+  await page.getByRole('checkbox', { name: 'geen inkomen', exact: true }).check();
+  await expect(page.getByText('Waar betaalt u eten en drinken van?', { exact: true })).toBeVisible();
+  await page.getByLabel('Waar betaalt u eten en drinken van?').fill('spaargeld');
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-08-inkomen')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Inkomen (vervolg)');
+  await page.getByRole('radiogroup', { name: 'Wordt er van uw inkomen een deel afgehaald (loonbeslag)?' }).getByRole('radio', { name: 'nee', exact: true }).check();
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-09-inkomen-vervolg')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Vermogen');
+  await page.getByLabel('Wat is de waarde van uw bezit?').fill('0');
+  await page.getByLabel('Hoe hoog zijn uw schulden?').fill('0');
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-10-vermogen')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Besluit');
+  await page.getByRole('radiogroup', { name: 'Hoe wilt u de brief met het besluit over de bijzondere bijstand ontvangen?' }).getByRole('radio', { name: 'per post', exact: true }).check();
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-11-besluit')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Opmerkingen');
+
+  await page.getByLabel('U kunt hieronder extra uitleg geven om uw aanvraag nog duidelijker te maken').fill('Testaanvraag bijzondere bijstand.');
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-12-opmerkingen')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Bijlagen');
+  await uploadFixture(page, page.getByRole('link', { name: "selecteer 'Toevoegen'-bestanden", exact: true }), 'pdf13Kb');
+  await page.getByRole('checkbox', { name: /Griffierecht: rekening van de rechtbank of advocaat/ }).check();
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-13-bijlagen')}`);
+  await page.getByRole('button', { name: 'Volgende', exact: true }).click();
+  await expectFormStep(page, 'Controleer en bevestig');
+  await page.getByRole('checkbox', { name: 'Ik verklaar dat ik deze aanvraag naar waarheid heb ingevuld en geen informatie heb verzwegen.' }).check();
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-14-overzicht')}`);
+  await expect(page.getByRole('button', { name: 'Verzenden', exact: true })).toBeEnabled({ timeout: 10_000 });
+  await page.getByRole('button', { name: 'Verzenden', exact: true }).click();
+  await expect(page.getByRole('heading', { name: /^Uw gegevens zijn verstuurd met kenmerk OF-[A-Z0-9]+$/ })).toBeVisible({ timeout: 120_000 });
+  await page.waitForTimeout(5_000);
+  console.log(`Form artifacts: ${await captureFormState(page, testInfo, 'bijzondere-bijstand-99-bevestiging')}`);
+});
