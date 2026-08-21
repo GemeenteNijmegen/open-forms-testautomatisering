@@ -4,6 +4,10 @@ import type { Page, TestInfo } from '@playwright/test';
 
 type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
+type CaptureOptions = {
+  fullPage?: boolean;
+};
+
 function runDirectory(testInfo: TestInfo): string {
   const timestamp = testInfo.config.metadata.formArtifactsRunTimestamp;
 
@@ -51,7 +55,7 @@ async function writeJson(file: string, value: JsonValue): Promise<void> {
  * Iedere capture bevat page.html, visible-text.txt, controls.json,
  * metadata.json en screenshot.png.
  */
-export async function captureFormState(page: Page, testInfo: TestInfo, label: string): Promise<string> {
+export async function captureFormState(page: Page, testInfo: TestInfo, label: string, options: CaptureOptions = {}): Promise<string> {
   const capturedAt = new Date().toISOString();
   const runOutput = path.resolve(process.cwd(), 'playwright-result-artifacts', 'form-runs', runDirectory(testInfo));
   const testOutput = path.join(runOutput, testFileLabel(testInfo), artifactLabel(testInfo.title));
@@ -100,12 +104,14 @@ export async function captureFormState(page: Page, testInfo: TestInfo, label: st
     writeJson(path.join(output, 'metadata.json'), {
       capturedAt,
       label: artifactLabel(label),
+      scrollY: await page.evaluate(() => window.scrollY),
+      screenshot: options.fullPage === false ? 'viewport' : 'full-page',
       testFile: relativeTestFile(testInfo),
       testTitle: testInfo.title,
       title,
       url: page.url(),
     }),
-    page.screenshot({ path: path.join(output, 'screenshot.png'), fullPage: true }),
+    page.screenshot({ path: path.join(output, 'screenshot.png'), fullPage: options.fullPage !== false }),
   ]);
 
   return path.relative(process.cwd(), output);
